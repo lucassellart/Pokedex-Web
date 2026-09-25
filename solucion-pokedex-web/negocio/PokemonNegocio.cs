@@ -69,6 +69,60 @@ namespace negocio
             }
         }
 
+        public List<Pokemon> listarConSP()
+        {
+            List<Pokemon> lista = new List<Pokemon>();
+            AccesoDatos datos = new AccesoDatos();      // me conecto a la DB
+
+            try
+            {
+                //string consulta = "Select Numero, Nombre, P.Descripcion, UrlImagen, P.IdTipo, P.IdDebilidad, E.Descripcion as Tipo, D.Descripcion as Debilidad, P.Id  from POKEMONS P, ELEMENTOS E, ELEMENTOS D where P.IdTipo = E.Id and P.IdDebilidad = D.Id and P.Activo = 1";
+
+                // ahora, con la consulta armada llamo al método para setearla y ejecutar la lectura:
+
+                //datos.setearConsulta(consulta);
+
+                datos.setearProcedimiento("storedListar");
+
+                datos.ejecutarLectura();
+
+                while (datos.Lector.Read())     // Traigo esta parte del método "listar" porque necesito leer los registros que están en la base de datos
+                {
+                    Pokemon aux = new Pokemon(); // Pokemon auxiliar para cargar los datos del registro (de la base de datos)
+
+                    aux.Id = (int)datos.Lector["Id"];                         // Cargo el Id del Pokemon
+                    aux.Numero = (int)datos.Lector["Numero"];                 // Cargo el número del Pokemon
+                    aux.Nombre = (string)datos.Lector["Nombre"];              // Cargo el nombre del Pokemon
+                    aux.Descripcion = (string)datos.Lector["Descripcion"];    // Cargo la descripción del Pokemon
+
+                    // Hago validación por si la UrlImagen es nula: 
+                    if (!(datos.Lector["UrlImagen"] is DBNull))
+                    {
+                        aux.UrlImagen = (string)datos.Lector["UrlImagen"];        // Cargo la URL de la imagen del Pokemon
+                    }
+
+                    // Voy a cargar los tipos de pokemon:
+                    aux.Tipo = new Elemento(); // Inicializo el objeto Tipo
+                    aux.Tipo.Id = (int)datos.Lector["IdTipo"]; // Cargo el Id del tipo
+                    aux.Tipo.Descripcion = (string)datos.Lector["Tipo"];
+
+                    // Voy a cargar las debilidades de los pokemon:
+                    aux.Debilidad = new Elemento(); // Inicializo el objeto Debilidad
+                    aux.Debilidad.Id = (int)datos.Lector["IdDebilidad"]; // Cargo el Id de la debilidad
+                    aux.Debilidad.Descripcion = (string)datos.Lector["Debilidad"];
+
+                    lista.Add(aux); // Agrego el Pokemon a la lista
+                }
+
+
+                return lista;
+            }
+            catch (SqlException)
+            {
+                throw;
+            }
+        }
+
         public void agregar(Pokemon nuevo)         // Método para agregar nuevos Pokemons a la DB
         {
             AccesoDatos datos = new AccesoDatos();          // Objeto para conectarme a la DB
